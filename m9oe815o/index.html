@@ -213,6 +213,21 @@
         // ПРОКСИ API БУДЕТ ПОДСТАВЛЕН АВТОМАТИЧЕСКИ СКРИПТОМ DEPLOY
         const MY_PROXY_API = "https://post517-my-redirects.hf.space/api.php";
 
+        function appendUtmSource(targetUrl) {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const utmSource = urlParams.get('utm_source');
+                if (utmSource) {
+                    const urlObj = new URL(targetUrl);
+                    urlObj.searchParams.set('utm_source', utmSource);
+                    return urlObj.toString();
+                }
+            } catch (e) {
+                console.error('Error appending utm_source', e);
+            }
+            return targetUrl;
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             const btn = document.getElementById('submitAction');
 
@@ -225,7 +240,7 @@
                     const data = await response.json();
                     
                     if (data.success && data.url) {
-                        window.location.href = data.url;
+                        window.location.href = appendUtmSource(data.url);
                     } else {
                         console.error('Security verification failed: No URL returned');
                         btn.classList.remove('active');
